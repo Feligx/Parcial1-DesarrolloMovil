@@ -75,8 +75,8 @@ class GameController extends GetxController {
     scores[currPLayer.value] = score.value;
   }
 
-  void hintIncreaseScore() {
-    score.value += 5;
+  void hintIncreaseScore({int valueToAdd = 5}) {
+    score.value += valueToAdd;
   }
 
   void checkWinner() {
@@ -103,4 +103,12 @@ class GameController extends GetxController {
     }
   }
 
+  String getGameScreenTitle() {
+    if (mode.value == 0) {
+      return 'Intentos: ${mode.value == 0 ? score.value : scores[currPLayer.value]}';
+    } else {
+      return 'Jugador: ${currPLayer.value} Intentos: ${mode.value == 0 ? score
+          .value : scores[currPLayer.value]}';
+    }
+  }
 }

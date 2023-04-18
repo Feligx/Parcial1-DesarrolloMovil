@@ -25,9 +25,14 @@ class _SoloModeViewState extends State<SoloModeView> {
   @override
   void initState() {
     super.initState();
-    _textControllers = List.generate(controller.difficulty.value, (index) => TextEditingController());
+    _textControllers = List.generate(controller.difficulty.value == 6 ? 5 : controller.difficulty.value, (index) => TextEditingController());
     if (controller.mode.value == 0) {
-      String systemNumber = randNumber(controller.difficulty.value);
+      String systemNumber;
+      if (controller.difficulty.value == 6) {
+        systemNumber = randHexNumber(5);
+      } else {
+        systemNumber = randNumber(controller.difficulty.value);
+      }
       controller.setOriginalNumber(systemNumber);
     }
   }
@@ -43,33 +48,48 @@ class _SoloModeViewState extends State<SoloModeView> {
   @override
   Widget build(BuildContext context) {
 
-    print('famasIndex: $famasIndex');
-
     return Scaffold(
         appBar: AppBar(
-          title: Text('Jugador:${controller.currPLayer.value} Intentos:${controller.mode.value == 0 ? controller.score.value : controller.scores[controller.currPLayer.value]}'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              controller.resetGame();
+              Get.back();
+            },
+          ),
         ),
         body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
+              Text(
+                controller.getGameScreenTitle(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: Theme.of(context).textTheme.headlineLarge!.fontSize,
+                ),
+              ),
               Text('Famas: ${famas} Puntos: ${puntos}', textAlign: TextAlign.center,),
               Form(
                 key: _formFieldKey,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children:
-                  List.generate(controller.difficulty.value, (index) => Container(
+                  List.generate(controller.difficulty.value == 6 ? 5 : controller.difficulty.value, (index) => Container(
                     padding: const EdgeInsets.all(8.0),
-                    width: MediaQuery.of(context).size.width / controller.difficulty.value,
+                    width: MediaQuery.of(context).size.width / (controller.difficulty.value == 6 ? 5 : controller.difficulty.value),
                     child: TextFormField(
-                      keyboardType: const TextInputType.numberWithOptions(),
+                      keyboardType: controller.difficulty.value != 6 ? const TextInputType.numberWithOptions() : TextInputType.text,
                       controller: famasIndex.contains(index) ? null : _textControllers[index],
                       maxLength: 1,
+                      buildCounter: null,
                       textInputAction: TextInputAction.next,
                       initialValue: famasIndex.contains(index) ? controller.originalNumber.value[index] : null,
                       readOnly: famasIndex.contains(index),
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder()
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                          border: !famasIndex.contains(index) ? OutlineInputBorder() : InputBorder.none,
+                          counter: Container(height: 0),
                       ),
                       validator: (value) {
 
@@ -101,12 +121,8 @@ class _SoloModeViewState extends State<SoloModeView> {
                       var valueToCompare = _textControllers.map((e) => e.text).join();
                       controller.increaseScore();
 
-                      print('mode: ${controller.mode.value}');
-
                       if (controller.mode.value == 1) {
-                        print('originalNumber: ${controller.originalNumber.value}');
                         if (controller.originalNumber.isEmpty) {
-                          print('originalNumber: ${controller.originalNumber.value}');
                           controller.setOriginalNumber(valueToCompare);
                           controller.changePlayer();
                           controller.resetScore();
@@ -117,7 +133,7 @@ class _SoloModeViewState extends State<SoloModeView> {
                           controller.setPlayerScore();
                           List<dynamic> result = getScore(controller.originalNumber.value, controller.testNumber.value);
 
-                          if (result[0].length == controller.difficulty.value) {
+                          if (result[0].length == (controller.difficulty.value == 6 ? 5 : controller.difficulty.value)) {
                             controller.resetNumbers();
                             controller.resetScore();
                             controller.checkWinner();
@@ -132,12 +148,9 @@ class _SoloModeViewState extends State<SoloModeView> {
                             for (var element in _textControllers) {
                               element.clear();
                             }
-
-                            print('scores: ${controller.scores}');
                             return;
                           }
 
-                          print('famas: ${result[0]} points: ${result[1]}');
                           setState(() {
                             famasIndex = result[0];
                             famas = result[0].length;
@@ -150,7 +163,7 @@ class _SoloModeViewState extends State<SoloModeView> {
                       controller.setTestNumber(valueToCompare);
 
                       List<dynamic> result = getScore(controller.originalNumber.value, controller.testNumber.value);
-                      if (result[0].length == controller.difficulty.value) {
+                      if (result[0].length == (controller.difficulty.value == 6 ? 5 : controller.difficulty.value)) {
                         Get.defaultDialog(
                             title: 'Ganaste',
                             middleText: 'Felicidades, has ganado el juego',
@@ -168,24 +181,29 @@ class _SoloModeViewState extends State<SoloModeView> {
                       });
                     }
                   },
-                  child: Text('Comprobar')
+                  child: const Text('Comprobar')
               )
             ],
           ),
         ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: famasIndex.length < (controller.difficulty.value == 6 ? 5 : controller.difficulty.value) ? FloatingActionButton(
         onPressed: () {
           setState(() {
-            if (famasIndex.length == controller.difficulty.value) {
+            if (famasIndex.length == (controller.difficulty.value == 6 ? 5 : controller.difficulty.value)) {
               return;
             }
+
             famasIndex.isEmpty ? famasIndex.add(0) : famasIndex.add(famasIndex.last + 1);
             _textControllers[famasIndex.last].text = controller.originalNumber.value[famasIndex.last];
+            if (famasIndex.length == (controller.difficulty.value == 6 ? 5 : controller.difficulty.value)) {
+              controller.hintIncreaseScore(valueToAdd: 4);
+              return;
+            }
             controller.hintIncreaseScore();
           });
         },
         child: const Icon(Icons.lightbulb_outline),
-      )
+      ) : null,
     );
   }
 }

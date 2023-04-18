@@ -18,7 +18,10 @@ class MyApp extends StatelessWidget {
       title: 'Puntos y Famas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor:
+          Colors.blue
+        )
       ),
       home: PickDifficultyView(),
     );

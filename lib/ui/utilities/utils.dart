@@ -13,11 +13,25 @@ String randNumber(int n) {
   return randNum;
 }
 
+String randHexNumber(int n) {
+  String randNum = '';
+  var rng = new Random();
+  for (int i = 0; i < n; i++) {
+    int nextNum = rng.nextInt(16);
+    while (randNum.contains(nextNum.toRadixString(16))){
+      nextNum = rng.nextInt(16);
+    }
+    randNum += nextNum.toRadixString(16);
+  }
+  return randNum;
+
+}
+
 List<dynamic> getScore(String original, String test) {
   int points = 0;
   List<int> famasIndexes = [];
   List<String> originalNumPositions = original.split('');
-  List<String> testNumPositions = test.split('');
+  List<String> testNumPositions = test.toLowerCase().split('');
 
   for (int i = 0; i < originalNumPositions.length; i++) {
     if (originalNumPositions[i] == testNumPositions[i]) {
